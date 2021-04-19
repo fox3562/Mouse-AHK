@@ -1,5 +1,6 @@
 # Mouse-AHK
-# Mouse shortcuts for navigation (in Chrome, FireFox and Notepad++
+
+Mouse shortcuts for navigation (in Chrome, FireFox and Notepad++
 
 for Browsers
 1) пкм+ролик вверх/низ - листаем вкладки
