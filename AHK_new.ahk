@@ -116,16 +116,23 @@ return
 	}
 	return
 
-	lbutton & Volume_Up:: 	SendInput ^{home}
-	lbutton & Volume_down:: SendInput ^{end}
-	~lbutton & wheelup:: 	 SendInput  {pgup}
-	~lbutton & wheeldown:: 	 SendInput  {pgdn}
+	~lbutton & Volume_Up:: 	SendInput {lbutton up} ^{home}
+	return
+	~lbutton & Volume_down:: SendInput {lbutton up} ^{end}
+	return
+	~lbutton & wheelup:: 	 SendInput  {lbutton up} {pgup}
+	return
+	~lbutton & wheeldown:: 	 SendInput  {lbutton up} {pgdn}
+	return
+	
 	lbutton & rbutton:: Send ^w
 	rbutton & lbutton:: Send ^+{click}
 	rbutton & mbutton:: Send ^{F5}
 	lbutton & mbutton:: Send ^v {enter}
+	
 	rbutton & Volume_Up:: SendInput {Browser_Forward}
 	rbutton & Volume_down:: SendInput {Browser_Back}
+	
 	Media_Stop & Volume_down:: Send ^#{left}
 	Media_Stop & Volume_up:: Send ^#{right}
 return
@@ -145,7 +152,8 @@ return
 	{
 		click right
 	}
-	return
+	;return
+
 	lbutton & Volume_Up:: 	SendInput ^{home}
 	lbutton & Volume_down:: SendInput ^{end}
 	lbutton & wheelup:: SendInput {pgup}
