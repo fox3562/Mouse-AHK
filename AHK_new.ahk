@@ -9,52 +9,20 @@ GroupAdd, browser, ahk_exe opera.exe
 ~+!x::ExitApp
 ~!+r::Reload
 
-;Double-click on the middle mouse button to switch Scroll Lock (Scroll Lock is responsible for switching mouse modes)
-#UseHook, On
-mbutton:: Gosub, PressCount
-mbutton(1):
-	Click Down middle
-	KeyWait, mbutton
-	Click Up middle
-	if GetKeyState("ScrollLock", "T") = 0
+;Copy/paste using the clamped Button + Volume_Up/Volume_down
+$MButton::
+	keywait, MButton, t0.2
+	if errorlevel
 	{
-		ToolTip, Copy.
-	}	
-	else
-	{
-		ToolTip, New table.
-	}
-	Sleep, 1000
-	ToolTip
-return
-mbutton(2):
-	if GetKeyState("ScrollLock", "T") = 0 
-	ToolTip, New table.
-	if GetKeyState("ScrollLock", "T") = 1 
-	ToolTip, Copy.
-	Send {ScrollLock}
-	Sleep, 1000
-	ToolTip
-return
-#UseHook, Off
-PressCount:
-	Pause_=350
-	if not Second
-	{
-		Second=1
-		SetTimer, DoublePress, -%Pause_%
-	}
-	else
-	{
-		Second=0
-		SetTimer, %A_ThisHotkey%(2), -1
-	}
-return
-DoublePress:
-	if not Second
+		MButton & Volume_Up:: Send ^c
 		return
-	Second=0
-	SetTimer, %A_ThisHotkey%(1), -1
+		MButton & Volume_down:: Send ^v
+		return
+	}
+	else
+	{
+		Send {MButton}
+	}
 return
 
 ;Search in Google selected text (Shift+LAlt+S)
