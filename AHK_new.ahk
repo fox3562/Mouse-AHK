@@ -1,134 +1,167 @@
-#NoEnv
-SendMode Input
+#NoEnv  ; Рекомендуется для совместимости с будущими версиями
+SetWorkingDir %A_ScriptDir%  ; Обеспечивает консистентность при запуске скрипта
+SendMode Input  ; Рекомендуется для новых скриптов
+SetBatchLines -1  ; Увеличивает скорость выполнения скрипта
 
+; Группировка браузеров
 GroupAdd, browser, ahk_exe firefox.exe
 GroupAdd, browser, ahk_exe chrome.exe
 GroupAdd, browser, ahk_exe opera.exe
+GroupAdd, browser, ahk_exe edge.exe
 
-;reload and exit this script
-~+!x::ExitApp
-~!+r::Reload
+; Горячие клавиши для управления скриптом
+~+!x::ExitApp  ; Shift+Alt+X для выхода
+~!+r::Reload   ; Alt+Shift+R для перезагрузки
 
-;Copy/paste using the clamped Button + Volume_Up/Volume_down
-$MButton::
-	keywait, MButton, t0.2
-	if errorlevel
-	{
-		MButton & Volume_Up:: Send ^c
-		return
-		MButton & Volume_down:: Send ^v
-		return
-	}
-	else
-	{
-		Send {MButton}
-	}
-return
-
-;Search in Google selected text (Shift+LAlt+S)
+; Поиск выделенного текста в Google (Shift+Alt+S)
 ~!+s::
-	clipboard := "Select the text!"
-	Send ^c
-	ClipWait, 1
-	if WinExist("ahk_group chrome") {
-	WinActivate
-	Send ^t
-	Send ^v
-	Send {Enter}
-	}
-	else {
-	Run, "C:\Program Files\Google\Chrome\Application\chrome.exe"
-	WinWaitActive, New Tab - Google Chrome, , 2
-	Send ^v
-	Send {Enter}
-	}
+    OldClipboard := ClipboardAll  ; Сохраняем содержимое буфера обмена
+    Clipboard := ""
+    Send ^c
+    ClipWait, 1
+    if ErrorLevel
+        return
+    
+    if WinExist("ahk_group browser") {
+        WinActivate
+        Send ^t
+        Sleep, 100
+        Send ^v
+        Send {Enter}
+    }
+    else {
+        Run, "C:\Program Files\Google\Chrome\Application\chrome.exe"
+        WinWaitActive, ahk_exe chrome.exe,, 5  ; Увеличено время ожидания
+        if ErrorLevel
+            return
+        Sleep, 500
+        Send ^v
+        Send {Enter}
+    }
+    
+    ; Восстанавливаем оригинальный буфер обмена
+    Sleep, 200
+    Clipboard := OldClipboard
+    OldClipboard := ""
 return
 
-;Translate selected text in Yandex (Shift+LAlt+A)
+; Перевод выделенного текста в Яндекс (Shift+Alt+A)
 ~!+a::
-	link := "https://translate.yandex.ru/?source_lang=en&target_lang=ru&text="
-	clipboard := ""
-	Send ^c
-	ClipWait, 1
-	if WinExist("ahk_group chrome") {
-	WinActivate	
-	Send ^t
-	Send %link%
-	Send ^v
-	Send {Enter}
-	}
-	else {
-	param := "https://translate.yandex.ru/"
-	chrome := "C:\Program Files\Google\Chrome\Application\chrome.exe"
-	Run, %chrome% %param%
-	WinWaitActive, , , 3
-	Send ^v
-	Send {Enter}
-	}
+    link := "https://translate.yandex.ru/?source_lang=auto&target_lang=ru&text=" 
+    OldClipboard := ClipboardAll  ; Сохраняем содержимое буфера обмена
+    Clipboard := ""
+    Send ^c
+    ClipWait, 1
+    if ErrorLevel
+        return
+    
+    if WinExist("ahk_group browser") {
+        WinActivate
+        Send ^t
+        Sleep, 100 
+        SendInput %link%
+        Send ^v
+        Send {Enter}
+    }
+    else {
+        chrome := "C:\Program Files\Google\Chrome\Application\chrome.exe"
+        Run, %chrome% "%link%%Clipboard%"  ; Напрямую открываем ссылку с текстом
+        WinWaitActive, ahk_exe chrome.exe,, 5
+        if ErrorLevel
+            return
+    }
+    
+    ; Восстанавливаем оригинальный буфер обмена
+    Sleep, 200
+    Clipboard := OldClipboard
+    OldClipboard := ""
 return
 
-;Hotkey for mouse in browser
-#ifWinActive, ahk_group browser
-	$rbutton::
-	keywait, rbutton, t0.2
-	if errorlevel
-	{
-		rbutton & wheelup:: SendInput ^{pgdn}
-		return
-		rbutton & wheeldown:: SendInput ^{pgup}
-		return
-	}
-	else
-	{
-		click right
-	}
-	return
-
-	~lbutton & Volume_Up:: 	SendInput {lbutton up} ^{home}
-	return
-	~lbutton & Volume_down:: SendInput {lbutton up} ^{end}
-	return
-	~lbutton & wheelup:: 	 SendInput  {lbutton up} {pgup}
-	return
-	~lbutton & wheeldown:: 	 SendInput  {lbutton up} {pgdn}
-	return
-	
-	lbutton & rbutton:: Send ^w
-	rbutton & lbutton:: Send ^+{click}
-	rbutton & mbutton:: Send ^{F5}
-	lbutton & mbutton:: Send ^v {enter}
-	
-	rbutton & Volume_Up:: SendInput {Browser_Forward}
-	rbutton & Volume_down:: SendInput {Browser_Back}
-	
-	Media_Stop & Volume_down:: Send ^#{left}
-	Media_Stop & Volume_up:: Send ^#{right}
+; Копирование/вставка с использованием средней кнопки мыши + Volume_Up/Volume_down
+$MButton::
+    KeyWait, MButton, T0.2
+    if ErrorLevel {
+        ; Длительное нажатие, комбинация с другими клавишами будет обработана ниже
+    }
+    else {
+        Click Middle  ; Обычный клик средней кнопкой
+    }
 return
 
-;Hotkey for mouse in Notepad++
-#ifWinActive, ahk_exe notepad++.exe
-	$rbutton::
-	keywait, rbutton, t0.2
-	if errorlevel
-	{
-		rbutton & wheelup:: SendInput ^{pgdn}
-		return
-		rbutton & wheeldown:: SendInput ^{pgup}
-		return
-	}
-	else
-	{
-		click right
-	}
-	;return
-
-	lbutton & Volume_Up:: 	SendInput ^{home}
-	lbutton & Volume_down:: SendInput ^{end}
-	lbutton & wheelup:: SendInput {pgup}
-	lbutton & wheeldown:: SendInput {pgdn}
-	lbutton & rbutton:: Send ^w
-	rbutton & mbutton:: Send ^n
-	mbutton & rbutton:: Send ^w
-	rbutton & Volume_Up:: Send ^y
-	rbutton & Volume_down:: Send ^z
+MButton & Volume_Up:: 
+    SendInput ^c
 return
+
+MButton & Volume_Down:: 
+    SendInput ^v
+return
+
+; Горячие клавиши для мыши в браузерах
+#IfWinActive ahk_group browser
+    ; Правая кнопка мыши с колесиком для переключения вкладок
+    $RButton::
+        KeyWait, RButton, T0.2
+        if ErrorLevel {
+            ; Длительное нажатие, подготовка к комбинации с другими клавишами
+        }
+        else {
+            Click Right  ; Обычный правый клик
+        }
+    return
+    
+    RButton & WheelUp:: 
+        SendInput ^{PgDn}  ;  PgDn для перехода к предыдущей вкладке
+    return
+    
+    RButton & WheelDown:: 
+        SendInput ^{PgUp}  ;  PgUp для перехода к следующей вкладке
+    return
+    
+    ; Средняя кнопка мыши с колесиком для перемещения в начало/конец страницы
+    ~MButton & WheelUp:: 
+        SendInput {MButton up} ^{Home}
+    return
+    
+    ~MButton & WheelDown:: 
+        SendInput {MButton up} ^{End}
+    return
+    
+    ; Левая кнопка мыши с колесиком для прокрутки страницы
+    ~LButton & WheelDown:: 
+        SendInput {LButton up} {PgDn}
+    return
+    
+    ~LButton & WheelUp:: 
+        SendInput {PgUp}
+    return
+    
+    ; Комбинации кнопок мыши
+    LButton & RButton:: 
+        Send ^w  ; Закрыть вкладку
+    return
+    
+    RButton & LButton:: 
+        Send ^+{Click}  ; Открыть ссылку в новой вкладке и перейти к ней
+    return
+    
+    RButton & MButton:: 
+        Send ^{F5}  ; Обновить страницу, игнорируя кэш
+    return
+    
+    LButton & MButton:: ; Alt+S хоткей для перевода (нужно расширение)
+		SendInput !s
+    return
+	
+	MButton & LButton:: ; Alt+T хоткей для перевода страницы (нужно расширение)
+		SendInput !t
+    return
+    
+    ; Навигация с помощью регуляторов громкости
+    RButton & Volume_Up:: 
+        SendInput {Browser_Forward}
+    return
+    
+    RButton & Volume_Down:: 
+        SendInput {Browser_Back}
+    return
+#IfWinActive
